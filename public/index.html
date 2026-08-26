@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>SEO Agent AI</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f5f7fb;
+            color: #111827;
+        }
+
+        .container {
+            width: min(1100px, 92%);
+            margin: 50px auto;
+        }
+
+        .header {
+            margin-bottom: 25px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 34px;
+        }
+
+        .header p {
+            color: #6b7280;
+        }
+
+        .box {
+            background: white;
+            padding: 25px;
+            border-radius: 14px;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 5px 20px rgba(0,0,0,.04);
+        }
+
+        .input-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        input {
+            flex: 1;
+            padding: 15px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 15px;
+        }
+
+        button {
+            padding: 0 25px;
+            border: 0;
+            border-radius: 8px;
+            background: #5b5ce2;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #4849c7;
+        }
+
+        button:disabled {
+            opacity: .6;
+            cursor: not-allowed;
+        }
+
+        #status {
+            display: none;
+            margin-top: 15px;
+            color: #5b5ce2;
+        }
+
+        #result {
+            margin-top: 25px;
+            white-space: pre-wrap;
+            line-height: 1.7;
+        }
+
+        .error {
+            color: #dc2626;
+            background: #fef2f2;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        @media(max-width: 700px) {
+
+            .input-row {
+                flex-direction: column;
+            }
+
+            button {
+                height: 50px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+<div class="container">
+
+    <div class="header">
+
+        <h1>SEO Agent AI</h1>
+
+        <p>
+            AI-powered SEO analysis for your webpages.
+        </p>
+
+    </div>
+
+
+    <div class="box">
+
+        <div class="input-row">
+
+            <input
+                id="url"
+                type="url"
+                placeholder="https://example.com"
+            >
+
+            <button
+                id="analyze"
+                onclick="analyzeWebsite()"
+            >
+                Analyze
+            </button>
+
+        </div>
+
+
+        <div id="status">
+            Analyzing webpage...
+        </div>
+
+
+        <div id="result"></div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+async function analyzeWebsite() {
+
+    const url =
+        document
+            .getElementById("url")
+            .value
+            .trim();
+
+    const button =
+        document.getElementById("analyze");
+
+    const status =
+        document.getElementById("status");
+
+    const result =
+        document.getElementById("result");
+
+
+    if (!url) {
+
+        result.innerHTML =
+            '<div class="error">Please enter a URL.</div>';
+
+        return;
+    }
+
+
+    button.disabled = true;
+
+    button.textContent =
+        "Analyzing...";
+
+    status.style.display =
+        "block";
+
+    result.innerHTML =
+        "";
+
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/analyze",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        url: url
+                    })
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                data.error ||
+                "Analysis failed."
+            );
+        }
+
+
+        result.textContent =
+            data.text;
+
+
+    } catch (error) {
+
+        result.innerHTML =
+            `<div class="error">
+                ${escapeHTML(error.message)}
+            </div>`;
+
+    } finally {
+
+        button.disabled =
+            false;
+
+        button.textContent =
+            "Analyze";
+
+        status.style.display =
+            "none";
+    }
+}
+
+
+function escapeHTML(text) {
+
+    return String(text)
+
+        .replaceAll("&", "&amp;")
+
+        .replaceAll("<", "&lt;")
+
+        .replaceAll(">", "&gt;")
+
+        .replaceAll('"', "&quot;")
+
+        .replaceAll("'", "&#039;");
+}
+
+
+document
+    .getElementById("url")
+    .addEventListener(
+        "keydown",
+        function(event) {
+
+            if (event.key === "Enter") {
+                analyzeWebsite();
+            }
+
+        }
+    );
+
+</script>
+
+</body>
+
+</html>
